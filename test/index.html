@@ -1,0 +1,29 @@
+<html>
+    <head>
+        <title>WS</title>
+    </head>
+    <body>
+        <h1>WS</h1>
+        <div id="status">
+            <p><em>Connecting...</em></p>
+        </div>
+        <script>
+            const status = document.getElementById('status');
+            const msg = document.getElementById('msg');
+            const submit = document.getElementById('submit');
+            const ws = new WebSocket(`ws://127.0.0.1:5800/ws`);
+
+            ws.onopen = function() {
+                status.innerHTML = '<p><em>Connected!</em></p>';
+
+                ws.send(JSON.stringify({
+                    call_type: 'unary',
+                    host: "127.0.0.1:6001",
+                    ssl: false,
+                    method: "search_engine.SearchEngine/GetCompany",
+                    data: "\n\x07bbc.com",
+                }));
+            };
+        </script>
+    </body>
+</html>
