@@ -5,7 +5,7 @@
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3 } from "@bufbuild/protobuf";
-import { Keywords } from "./search_engine_companies_parameters-v1_pb.js";
+import { Keywords } from "./search_engine_companies_parameters-v1_pb";
 
 /**
  * @generated from message search_engine.JobTitleScores

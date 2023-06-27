@@ -3,7 +3,7 @@ use http::{Method, Request};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::error::Error;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, oneshot};
 
 use tokio::net::TcpStream;
 
@@ -30,7 +30,9 @@ pub struct Command {
 
 #[derive(Debug)]
 enum CommandKind {
-    Unary,
+    Unary {
+        response_sender: oneshot::Sender<Vec<u8>>,
+    },
 }
 
 impl GrpcClient {
@@ -65,8 +67,10 @@ impl GrpcClient {
 
                 tokio::spawn(async move {
                     match cmd.kind {
-                        Unary => {
+                        Unary { response_sender } => {
                             let scheme: &str = if cmd.ssl { "https" } else { "http" };
+
+                            println!("{}://{}/{}", scheme, cmd.host, cmd.endpoint);
 
                             let request = Request::builder()
                                 .method(Method::POST)
@@ -88,25 +92,29 @@ impl GrpcClient {
                                 .unwrap();
 
                             let response = response.await.unwrap();
+                            // println!("GOT RESPONSE: {:?}", response);
                             if response.status() != 200 {
                                 println!("GOT RESPONSE: {:?}", response.status());
                                 panic!("unexpected status: {}", response.status());
                             }
 
-                            // Get the body
                             let mut body = response.into_body();
 
-                            // while let Some(chunk) = body.data().await {
-                            //     println!("GOT CHUNK = {:?}", chunk?);
-                            // }
+                            let mut result: Vec<u8> = vec![];
+                            while let Some(chunk) = body.data().await {
+                                result.extend(chunk.unwrap().to_vec());
+                            }
+                            println!("GOT RESULT: {:?}", result);
+                            if result.len() == 0 {
+                                return;
+                            }
+                            result.drain(0..5); // remove the first 5 bytes (compression flag + length)
 
-                            // if let Some(trailers) = body.trailers().await? {
-                            //     println!("GOT TRAILERS: {:?}", trailers);
-                            // }
-                            println!("got response");
-                            println!("-----------------");
-                            println!("-----------------");
-                            println!("-----------------");
+                            let _ = response_sender.send(result);
+
+                            if let Some(trailers) = body.trailers().await.unwrap() {
+                                println!("GOT TRAILERS: {:?}", trailers);
+                            }
                         }
                     }
                 });
@@ -122,19 +130,25 @@ impl GrpcClient {
         ssl: bool,
         endpoint: String,
         message: String,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<Vec<u8>, Box<dyn Error>> {
+        let (resp_tx, resp_rx) = oneshot::channel();
+
         self.tx
             .send(Command {
                 host: host,
                 ssl: ssl,
                 endpoint: endpoint,
                 message: message,
-                kind: CommandKind::Unary,
+                kind: CommandKind::Unary {
+                    response_sender: resp_tx,
+                },
             })
             .await
             .unwrap();
 
-        Ok(())
+        let res = resp_rx.await.unwrap();
+
+        Ok(res)
     }
 
     fn get_data(data_to_send: &[u8]) -> Vec<u8> {

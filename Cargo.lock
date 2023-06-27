@@ -464,6 +464,7 @@ dependencies = [
 name = "grpc_browser"
 version = "1.0.0"
 dependencies = [
+ "bytes",
  "futures-util",
  "h2",
  "http",

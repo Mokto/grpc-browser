@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import {HelloRequest} from './gen/helloworld_pb';
+import { HelloRequest } from './gen/helloworld_pb';
+import { GetCompanyRequest } from './gen/search_engine-v1_pb';
 
 window.Buffer = window.Buffer || require("buffer").Buffer;
+
+
 
 function App() {
   useEffect(() => {
@@ -11,6 +14,7 @@ function App() {
     const ws = new WebSocket(`ws://127.0.0.1:5800/ws`);
 
     ws.onopen = function() {
+      console.log(Array.from(new GetCompanyRequest({domain: "hsbc.com"}).toBinary()))
       
         ws.send(JSON.stringify({
             call_type: 'unary',
@@ -18,6 +22,7 @@ function App() {
             ssl: false,
             method: "search_engine.SearchEngine/GetCompany",
             data: "\n\x07hsbc.io",
+            // data: Array.from(new GetCompanyRequest({domain: "hsbc.com"}).toBinary()),
             // call_type: 'unary',
             // host: "127.0.0.1:50051",
             // ssl: false,

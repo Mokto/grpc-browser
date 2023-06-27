@@ -5,10 +5,10 @@
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
-import { Email, Person } from "./search_engine_people-v1_pb.js";
-import { Company } from "./search_engine_companies-v1_pb.js";
-import { CompaniesFilters } from "./search_engine_companies_parameters-v1_pb.js";
-import { PeopleFilters } from "./search_engine_people_parameters-v1_pb.js";
+import { Email, Person } from "./search_engine_people-v1_pb";
+import { Company } from "./search_engine_companies-v1_pb";
+import { CompaniesFilters } from "./search_engine_companies_parameters-v1_pb";
+import { PeopleFilters } from "./search_engine_people_parameters-v1_pb";
 
 /**
  * @generated from enum search_engine.Collection
