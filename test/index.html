@@ -21,8 +21,16 @@
                     host: "127.0.0.1:6001",
                     ssl: false,
                     method: "search_engine.SearchEngine/GetCompany",
-                    data: "\n\x07bbc.com",
+                    data: "\n\x07hsbc.io",
                 }));
+
+
+                ws.onmessage = function(evt) {
+                    const received_msg = evt.data;
+                    const message = JSON.parse(received_msg);
+
+                    console.log(JSON.stringify(message.bytes))
+                };
             };
         </script>
     </body>
