@@ -38,9 +38,12 @@ export class GrpcServiceConnect<T extends ConnectService> {
                 host: host,
                 ssl: ssl,
                 method: `${service.typeName}/${value.name}`,
-                data: Array.from(input.toBinary()),
+                operationId: 0,
             }))
-            // this.grpcBrowser.send(input.toBinary());
+            this.grpcBrowser.send(input.toBinary());
+
+            const result = await this.grpcBrowser.waitForMessage();
+            return value.O.fromBinary(result);
         };
     });
   }
