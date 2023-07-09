@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { HelloRequest } from './gen/helloworld_pb';
-import { GetCompanyRequest } from './gen/search_engine-v1_pb';
+import { HelloRequest, HelloReply } from './gen/helloworld_pb';
 
 window.Buffer = window.Buffer || require("buffer").Buffer;
 
@@ -10,24 +9,15 @@ window.Buffer = window.Buffer || require("buffer").Buffer;
 
 function App() {
   useEffect(() => {
-
     const ws = new WebSocket(`ws://127.0.0.1:5800/ws`);
 
     ws.onopen = function() {
-      console.log(Array.from(new GetCompanyRequest({domain: "hsbc.com"}).toBinary()))
-      
         ws.send(JSON.stringify({
             call_type: 'unary',
-            host: "127.0.0.1:6001",
+            host: "127.0.0.1:50051",
             ssl: false,
-            method: "search_engine.SearchEngine/GetCompany",
-            data: "\n\x07hsbc.io",
-            // data: Array.from(new GetCompanyRequest({domain: "hsbc.com"}).toBinary()),
-            // call_type: 'unary',
-            // host: "127.0.0.1:50051",
-            // ssl: false,
-            // method: "helloworld.Greeter/SayHello",
-            // data: window.Buffer.from(new HelloRequest({name: "Theo Mathieu"}).toBinary().buffer).toString(),
+            method: "helloworld.Greeter/SayHello",
+            data: Array.from(new HelloRequest({name: "John Doe"}).toBinary()),
         }));
 
 
@@ -35,9 +25,10 @@ function App() {
             const received_msg = evt.data;
             const message = JSON.parse(received_msg);
 
-            console.log(JSON.stringify(message.bytes))
+            console.log(HelloReply.fromBinary(Buffer.from(message.bytes)))
         };
     };
+
   }, []);
   return (
     <div className="App">

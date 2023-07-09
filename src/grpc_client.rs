@@ -24,7 +24,7 @@ pub struct Command {
     host: String,
     ssl: bool,
     endpoint: String,
-    message: String,
+    message: Vec<u8>,
     kind: CommandKind,
 }
 
@@ -44,6 +44,9 @@ impl GrpcClient {
         tokio::spawn(async move {
             while let Some(cmd) = rx.recv().await {
                 use CommandKind::*;
+                println!("RX RECV {:?}", cmd);
+                // response_sender.send(!vec![]);
+                // return;
 
                 let key = GrpcClient::get_hashmap_key(cmd.host.clone());
                 if !connections.contains_key(key.as_str()) {
@@ -81,18 +84,16 @@ impl GrpcClient {
                                 .body(())
                                 .unwrap();
 
+                            // println!("SENDING REQUEST: {:?}", request);
+
                             let (response, mut stream) =
                                 client.send_request(request, false).unwrap();
 
                             stream
-                                .send_data(
-                                    GrpcClient::get_data(cmd.message.as_bytes()).into(),
-                                    true,
-                                )
+                                .send_data(GrpcClient::get_data(&cmd.message).into(), true)
                                 .unwrap();
 
                             let response = response.await.unwrap();
-                            // println!("GOT RESPONSE: {:?}", response);
                             if response.status() != 200 {
                                 println!("GOT RESPONSE: {:?}", response.status());
                                 panic!("unexpected status: {}", response.status());
@@ -104,7 +105,7 @@ impl GrpcClient {
                             while let Some(chunk) = body.data().await {
                                 result.extend(chunk.unwrap().to_vec());
                             }
-                            println!("GOT RESULT: {:?}", result);
+                            // println!("GOT RESULT: {:?}", result);
                             if result.len() == 0 {
                                 return;
                             }
@@ -129,7 +130,7 @@ impl GrpcClient {
         host: String,
         ssl: bool,
         endpoint: String,
-        message: String,
+        message: Vec<u8>,
     ) -> Result<Vec<u8>, Box<dyn Error>> {
         let (resp_tx, resp_rx) = oneshot::channel();
 
@@ -152,7 +153,7 @@ impl GrpcClient {
     }
 
     fn get_data(data_to_send: &[u8]) -> Vec<u8> {
-        let mut result: Vec<u8> = vec![1];
+        let mut result: Vec<u8> = vec![0];
         result.extend(
             u32::try_from(data_to_send.len())
                 .unwrap()

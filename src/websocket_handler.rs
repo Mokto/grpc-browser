@@ -1,3 +1,5 @@
+use std::vec;
+
 use salvo::ws::WebSocketUpgrade;
 use salvo::{prelude::*, ws::Message, ws::WebSocket};
 use serde::{Deserialize, Serialize};
@@ -10,7 +12,7 @@ struct WebsocketEvent {
     host: String,
     ssl: bool,
     method: String,
-    data: String,
+    data: Vec<u8>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -40,14 +42,15 @@ impl Handler for WebsocketHandler {
                             return;
                         }
                         if msg.is_text() {
+                            println!("txt");
                             let data = msg.to_str().unwrap();
                             let websocket_event: WebsocketEvent = serde_json::from_str(data)
                                 .unwrap_or(WebsocketEvent {
-                                    call_type: "".to_string(),
+                                    call_type: "failure".to_string(),
                                     host: "".to_string(),
                                     ssl: false,
                                     method: "".to_string(),
-                                    data: "".to_string(),
+                                    data: vec![],
                                 });
                             if websocket_event.call_type == "unary" {
                                 let result = grpc_client
@@ -55,12 +58,12 @@ impl Handler for WebsocketHandler {
                                         websocket_event.host,
                                         websocket_event.ssl,
                                         websocket_event.method,
-                                        websocket_event.data.to_string(),
+                                        websocket_event.data,
                                     )
                                     .await
                                     .unwrap();
 
-                                println!("Result: {:?}", result.clone());
+                                println!("Result from unary: {:?}", result.clone());
                                 // println!("Result: {:?}", result.as_ref());
 
                                 let ws_response = WebsocketResponse { bytes: result };
