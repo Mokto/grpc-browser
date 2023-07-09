@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { HelloReply, HelloRequest } from "./helloworld_pb.js";
+import { HelloReply, HelloRequest } from "./helloworld_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**

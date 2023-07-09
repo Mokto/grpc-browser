@@ -63,13 +63,7 @@ impl Handler for WebsocketHandler {
                                     .await
                                     .unwrap();
 
-                                println!("Result from unary: {:?}", result.clone());
-                                // println!("Result: {:?}", result.as_ref());
-
-                                let ws_response = WebsocketResponse { bytes: result };
-                                let ws_string = serde_json::to_string(&ws_response).unwrap();
-
-                                if ws.send(Message::text(ws_string)).await.is_err() {
+                                if ws.send(Message::binary(result)).await.is_err() {
                                     println!("Disconnected.");
                                 }
                             }
