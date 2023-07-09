@@ -21,28 +21,28 @@ type Unary<I, O> = (input: I) => Promise<O>;
 
 export class GrpcServiceConnect<T extends ConnectService> {
   public methods: {
-    [prop in keyof T['methods']]: Unary<T['methods'][prop]['I'], T['methods'][prop]['O']>;
+    [prop in keyof T['methods']]: Unary<InstanceType<T['methods'][prop]['I']>, InstanceType<T['methods'][prop]['O']>>;
   }
 
   constructor(
-    private readonly grpcBrowser: GrpcBrowser,
-    private readonly service: T,
-    private host: string,
-    private ssl: boolean,
+    grpcBrowser: GrpcBrowser,
+    service: T,
+    host: string,
+    ssl: boolean,
   ) {
     this.methods = {} as any;
     Object.entries(service.methods).forEach(([key, value]) => {
-        this.methods[key] = async (input: typeof value.I) => {
-            this.grpcBrowser.send(JSON.stringify({
+        this.methods[key as keyof T["methods"]] = async (input: typeof value.I) => {
+            grpcBrowser.send(JSON.stringify({
                 call_type: value.kind === 0 ? 'unary' : 'unsupported',
                 host: host,
                 ssl: ssl,
                 method: `${service.typeName}/${value.name}`,
                 operationId: 0,
             }))
-            this.grpcBrowser.send(input.toBinary());
+            grpcBrowser.send(input.toBinary());
 
-            const result = await this.grpcBrowser.waitForMessage();
+            const result = await grpcBrowser.waitForMessage();
             return value.O.fromBinary(result);
         };
     });
