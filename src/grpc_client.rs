@@ -39,17 +39,27 @@ impl GrpcClient {
     pub fn new() -> GrpcClient {
         let (tx, mut rx) = mpsc::channel::<Command>(32);
 
-        let mut connections = HashMap::new();
+        let mut connections: HashMap<String, client::SendRequest<bytes::Bytes>> = HashMap::new();
 
         tokio::spawn(async move {
             while let Some(cmd) = rx.recv().await {
                 use CommandKind::*;
-                println!("RX RECV {:?}", cmd);
-                // response_sender.send(!vec![]);
-                // return;
 
                 let key = GrpcClient::get_hashmap_key(cmd.host.clone());
-                if !connections.contains_key(key.as_str()) {
+                let mut force_reconnect: bool = false;
+                if connections.contains_key(key.as_str()) {
+                    if connections
+                        .get(GrpcClient::get_hashmap_key(cmd.host.clone()).as_str())
+                        .unwrap()
+                        .clone()
+                        .ready()
+                        .await
+                        .is_err()
+                    {
+                        force_reconnect = true;
+                    }
+                }
+                if force_reconnect || !connections.contains_key(key.as_str()) {
                     let tcp = TcpStream::connect(cmd.host.as_str()).await.unwrap();
                     let (client, http2_connection) = client::handshake(tcp).await.unwrap();
 
@@ -85,8 +95,6 @@ impl GrpcClient {
                                 .body(())
                                 .unwrap();
 
-                            // println!("SENDING REQUEST: {:?}", request);
-
                             let (response, mut stream) =
                                 client.send_request(request, false).unwrap();
 
@@ -112,11 +120,11 @@ impl GrpcClient {
                             }
                             result.drain(0..5); // remove the first 5 bytes (compression flag + length)
 
-                            let _ = response_sender.send(result);
+                            response_sender.send(result).unwrap();
 
-                            if let Some(trailers) = body.trailers().await.unwrap() {
-                                println!("GOT TRAILERS: {:?}", trailers);
-                            }
+                            // if let Some(trailers) = body.trailers().await.unwrap() {
+                            //     println!("GOT TRAILERS: {:?}", trailers);
+                            // }
                         }
                     }
                 });

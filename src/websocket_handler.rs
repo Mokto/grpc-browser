@@ -43,18 +43,9 @@ impl Handler for WebsocketHandler {
                             return;
                         }
                         if msg.is_text() {
-                            println!("txt");
                             let data = msg.to_str().unwrap();
                             let websocket_event: WebsocketEvent =
                                 serde_json::from_str(data).unwrap();
-                            // .unwrap_or(WebsocketEvent {
-                            //     call_type: "failure".to_string(),
-                            //     host: "".to_string(),
-                            //     ssl: false,
-                            //     method: "".to_string(),
-                            //     operationId: 0,
-                            //     // data: vec![],
-                            // });
                             queries.insert(websocket_event.operation_id, websocket_event);
                         }
                         if msg.is_binary() {

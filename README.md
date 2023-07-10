@@ -12,7 +12,7 @@
 First you need to generate the typescript files with [buf web connect library](https://github.com/bufbuild/protobuf-es). protobufjs/minimal support is on the way
 
 ```typescript
-const grpcBrowser = new GrpcBrowser(`ws://127.0.0.1:5800/ws`) // connects to the GRPC browser
+const grpcBrowser = new GrpcBrowser(`ws://127.0.0.1:5800/ws`) // connects to the GRPC browser proxy
 const service = new GrpcServiceConnect(grpcBrowser, Greeter, "127.0.0.1:50051", false); // creates a internal grpc service proxy - note that 127.0.0.1:50051 is the internal grpc server address accessible from the proxy. Greeter is the service file generated from the bug web connect library
 const result = await service.methods.sayHello(new HelloRequest({name: 'John'})) // then you can easily call any unary method from your service.
 ```
@@ -25,7 +25,7 @@ const result = await service.methods.sayHello(new HelloRequest({name: 'John'})) 
 
 Needs to be done
 
-- [ ] GRPC channel reconnection
+- [X] GRPC channel reconnection
 - [X] Send result back to Websocket
 - [X] Support different operations at the same time
 - [X] Add default metadata (grpc-proxied-from = grpc-browser)
