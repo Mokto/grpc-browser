@@ -13,7 +13,7 @@ First you need to generate the typescript files with [buf web connect library](h
 
 ```typescript
 const grpcBrowser = new GrpcBrowser(`ws://127.0.0.1:5800/ws`) // connects to the GRPC browser
-service = new GrpcServiceConnect(grpcBrowser, Greeter, "127.0.0.1:50051", false); // creates a internal grpc service proxy - note that 127.0.0.1:50051 is the internal grpc server address accessible from the proxy. Greeter is the service file generated from the bug web connect library
+const service = new GrpcServiceConnect(grpcBrowser, Greeter, "127.0.0.1:50051", false); // creates a internal grpc service proxy - note that 127.0.0.1:50051 is the internal grpc server address accessible from the proxy. Greeter is the service file generated from the bug web connect library
 const result = await service.methods.sayHello(new HelloRequest({name: 'John'})) // then you can easily call any unary method from your service.
 ```
 
