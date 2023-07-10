@@ -1,10 +1,11 @@
+import { uint8ArrayToNum } from "./operation-bytes";
 
 export class GrpcBrowser {
     public isConnected: boolean = false;
     private ws: WebSocket;
-    private messageQueue: string[] = [];
+    private messageQueue: (string | Uint8Array)[] = [];
     private callbacks: {
-        [operationId: number]: (blob: Blob) => void
+        [operationId: number]: (arr: Uint8Array) => void
     } = {}
 
     constructor(host: string) {
@@ -14,7 +15,7 @@ export class GrpcBrowser {
         this.ws.onmessage = this.onMessage;
     }
 
-    public send(data: string) {
+    public send(data: string | Uint8Array) {
         if (this.isConnected) {
             this.ws.send(data);
         } else {
@@ -23,16 +24,22 @@ export class GrpcBrowser {
     }
 
     private onMessage = (event: MessageEvent) => {
-        if (this.callbacks[0]) {
-            this.callbacks[0](event.data);
-        }
+        (event.data as Blob).arrayBuffer().then(buffer => {
+            const uintArray = new Uint8Array(buffer);
+            const operationIdSlice = uintArray.slice(0, 4);
+            const operationId = uint8ArrayToNum(operationIdSlice);
+            const data = uintArray.slice(4);
+
+            if (this.callbacks[operationId]) {
+                this.callbacks[operationId](data);
+                delete this.callbacks[operationId];
+            }
+        })
     };
 
-    public waitForMessage = async () => {
+    public waitForMessage = async (operationId: number) => {
         return new Promise((resolve, reject) => {
-            this.callbacks[0] = (blob: Blob) => {
-                blob.arrayBuffer().then(buffer => resolve(new Uint8Array(buffer)))
-            }
+            this.callbacks[operationId] = (arr: Uint8Array) => resolve(arr)
         });
     }
 

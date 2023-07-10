@@ -4,7 +4,9 @@ Needs to be done
 
 - [ ] GRPC channel reconnection
 - [X] Send result back to Websocket
-- [ ] Support different operations at the same time
+- [X] Support different operations at the same time
+- [ ] Add default metadata (grpc-browser = true for example)
+- [ ] Support passing additional metadata
 
 
 Nice to have:
