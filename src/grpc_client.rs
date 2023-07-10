@@ -81,6 +81,7 @@ impl GrpcClient {
                                 .header("TE", "trailers")
                                 .header("grpc-timeout", "30S")
                                 .header("content-type", "application/grpc")
+                                .header("grpc-proxied-from", "grpc-browser")
                                 .body(())
                                 .unwrap();
 
