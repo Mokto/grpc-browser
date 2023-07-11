@@ -1,13 +1,13 @@
-// use hello_world::greeter_server::{Greeter, GreeterServer};
 use tokio;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 use tonic::{transport::Server, Request, Response, Status};
-// use hello_world::{HelloReply, HelloRequest};
 
 pub mod helloworld {
     tonic::include_proto!("helloworld");
 }
 use helloworld::greeter_server::{Greeter, GreeterServer};
-use helloworld::{HelloReply, HelloRequest};
+use helloworld::{HelloReply, HelloRequest, SayHelloMultipleRequest, SayHelloMultipleResponse};
 
 #[derive(Default)]
 pub struct MyGreeter {}
@@ -25,6 +25,30 @@ impl Greeter for MyGreeter {
             message: format!("Hello {}!", request.into_inner().name),
         };
         Ok(Response::new(reply))
+    }
+
+    type SayHelloMultipleStream = ReceiverStream<Result<SayHelloMultipleResponse, Status>>;
+    async fn say_hello_multiple(
+        &self,
+        request: Request<SayHelloMultipleRequest>,
+    ) -> Result<Response<Self::SayHelloMultipleStream>, Status> {
+        println!("Got a request from {:?}", request.remote_addr());
+        println!("Metadata {:?}", request.metadata());
+
+        let (tx, rx) = mpsc::channel(4);
+        let names = request.into_inner().names;
+
+        tokio::spawn(async move {
+            for name in &names[..] {
+                tx.send(Ok(helloworld::SayHelloMultipleResponse {
+                    message: format!("Hello {}!", name.clone()),
+                }))
+                .await
+                .unwrap();
+            }
+        });
+
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 }
 
