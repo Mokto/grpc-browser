@@ -22,7 +22,7 @@
     "typescript": "^4.9.5"
   },
   "scripts": {
-    "generate": "npx buf generate ../server/proto",
+    "generate": "npx buf generate ../server/proto --output ./src",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

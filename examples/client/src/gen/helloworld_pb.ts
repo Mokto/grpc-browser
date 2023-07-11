@@ -84,3 +84,77 @@ export class HelloReply extends Message<HelloReply> {
   }
 }
 
+/**
+ * @generated from message helloworld.SayHelloMultipleRequest
+ */
+export class SayHelloMultipleRequest extends Message<SayHelloMultipleRequest> {
+  /**
+   * @generated from field: repeated string names = 1;
+   */
+  names: string[] = [];
+
+  constructor(data?: PartialMessage<SayHelloMultipleRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "helloworld.SayHelloMultipleRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "names", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SayHelloMultipleRequest {
+    return new SayHelloMultipleRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SayHelloMultipleRequest {
+    return new SayHelloMultipleRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SayHelloMultipleRequest {
+    return new SayHelloMultipleRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SayHelloMultipleRequest | PlainMessage<SayHelloMultipleRequest> | undefined, b: SayHelloMultipleRequest | PlainMessage<SayHelloMultipleRequest> | undefined): boolean {
+    return proto3.util.equals(SayHelloMultipleRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message helloworld.SayHelloMultipleResponse
+ */
+export class SayHelloMultipleResponse extends Message<SayHelloMultipleResponse> {
+  /**
+   * @generated from field: string message = 1;
+   */
+  message = "";
+
+  constructor(data?: PartialMessage<SayHelloMultipleResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "helloworld.SayHelloMultipleResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "message", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SayHelloMultipleResponse {
+    return new SayHelloMultipleResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SayHelloMultipleResponse {
+    return new SayHelloMultipleResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SayHelloMultipleResponse {
+    return new SayHelloMultipleResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SayHelloMultipleResponse | PlainMessage<SayHelloMultipleResponse> | undefined, b: SayHelloMultipleResponse | PlainMessage<SayHelloMultipleResponse> | undefined): boolean {
+    return proto3.util.equals(SayHelloMultipleResponse, a, b);
+  }
+}
+

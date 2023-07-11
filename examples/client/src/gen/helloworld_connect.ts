@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { HelloReply, HelloRequest } from "./helloworld_pb";
+import { HelloReply, HelloRequest, SayHelloMultipleRequest, SayHelloMultipleResponse } from "./helloworld_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -24,6 +24,15 @@ export const Greeter = {
       I: HelloRequest,
       O: HelloReply,
       kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc helloworld.Greeter.SayHelloMultiple
+     */
+    sayHelloMultiple: {
+      name: "SayHelloMultiple",
+      I: SayHelloMultipleRequest,
+      O: SayHelloMultipleResponse,
+      kind: MethodKind.ServerStreaming,
     },
   }
 } as const;
