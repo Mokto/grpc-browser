@@ -17,7 +17,11 @@ interface ConnectServiceUnary<I, O> {
     kind: MethodKind.Unary,
 }
 
-type Unary<I, O> = (input: I) => Promise<O>;
+interface CallOptions {
+  headers?: Record<string, string>;
+}
+
+type Unary<I, O> = (input: I, options?: CallOptions) => Promise<O>;
 
 
 export class GrpcServiceConnect<T extends ConnectService> {
@@ -33,7 +37,7 @@ export class GrpcServiceConnect<T extends ConnectService> {
   ) {
     this.methods = {} as any;
     Object.entries(service.methods).forEach(([key, value]) => {
-        this.methods[key as keyof T["methods"]] = async (input: typeof value.I) => {
+        this.methods[key as keyof T["methods"]] = async (input: typeof value.I, options?: CallOptions) => {
             const operationId = getRandomUint32();
             grpcBrowser.send(JSON.stringify({
                 call_type: value.kind === 0 ? 'unary' : 'unsupported',
@@ -41,17 +45,15 @@ export class GrpcServiceConnect<T extends ConnectService> {
                 ssl: ssl,
                 method: `${service.typeName}/${value.name}`,
                 operation_id: operationId,
+                headers: options?.headers,
             }))
 
             const operationIdBinary = numToUint8Array(operationId);
             const inputBinary = input.toBinary();
-            // console.log(operationIdBinary)
-            // console.log(inputBinary)
+
             const fullBinary = new Uint8Array(operationIdBinary.length + inputBinary.length)
-            // fullBinary.
             fullBinary.set(operationIdBinary);
             fullBinary.set(inputBinary, operationIdBinary.length);
-            // console.log(fullBinary)
             
             grpcBrowser.send(fullBinary);
 

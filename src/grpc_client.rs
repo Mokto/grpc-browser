@@ -25,6 +25,7 @@ pub struct Command {
     ssl: bool,
     endpoint: String,
     message: Vec<u8>,
+    additional_headers: HashMap<String, String>,
     kind: CommandKind,
 }
 
@@ -85,15 +86,20 @@ impl GrpcClient {
 
                             println!("{}://{}/{}", scheme, cmd.host, cmd.endpoint);
 
-                            let request = Request::builder()
+                            let mut request_builder = Request::builder()
                                 .method(Method::POST)
                                 .uri(format!("{}://{}/{}", scheme, cmd.host, cmd.endpoint))
                                 .header("TE", "trailers")
                                 .header("grpc-timeout", "30S")
                                 .header("content-type", "application/grpc")
-                                .header("grpc-proxied-from", "grpc-browser")
-                                .body(())
-                                .unwrap();
+                                .header("grpc-proxied-from", "grpc-browser");
+
+                            for (header_key, header_value) in cmd.additional_headers.into_iter() {
+                                request_builder = request_builder
+                                    .header(header_key.as_str(), header_value.as_str());
+                            }
+
+                            let request = request_builder.body(()).unwrap();
 
                             let (response, mut stream) =
                                 client.send_request(request, false).unwrap();
@@ -140,6 +146,7 @@ impl GrpcClient {
         ssl: bool,
         endpoint: String,
         message: Vec<u8>,
+        additional_headers: HashMap<String, String>,
     ) -> Result<Vec<u8>, Box<dyn Error>> {
         let (resp_tx, resp_rx) = oneshot::channel();
 
@@ -149,6 +156,7 @@ impl GrpcClient {
                 ssl: ssl,
                 endpoint: endpoint,
                 message: message,
+                additional_headers: additional_headers,
                 kind: CommandKind::Unary {
                     response_sender: resp_tx,
                 },

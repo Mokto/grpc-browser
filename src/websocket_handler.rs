@@ -13,6 +13,7 @@ struct WebsocketEvent {
     ssl: bool,
     method: String,
     operation_id: u32,
+    headers: Option<HashMap<String, String>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -59,9 +60,16 @@ impl Handler for WebsocketHandler {
                             let websocket_event = queries.get(&operation_id).unwrap();
                             let host = websocket_event.host.clone();
                             let method = websocket_event.method.clone();
+                            let headers = websocket_event.headers.clone().unwrap_or(HashMap::new());
                             if websocket_event.call_type == "unary" {
                                 let result = grpc_client
-                                    .unary(host, websocket_event.ssl, method, message.into())
+                                    .unary(
+                                        host,
+                                        websocket_event.ssl,
+                                        method,
+                                        message.into(),
+                                        headers,
+                                    )
                                     .await
                                     .unwrap();
 

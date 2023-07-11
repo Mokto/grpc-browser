@@ -14,7 +14,7 @@ function App() {
     (async () => {
       const grpcBrowser = new GrpcBrowser(`ws://127.0.0.1:5800/ws`)
       service.current = new GrpcServiceConnect(grpcBrowser, Greeter, "127.0.0.1:50051", false);
-      const result = await service.current.methods.sayHello(new HelloRequest({name: 'Theo'}))
+      const result = await service.current.methods.sayHello(new HelloRequest({name: 'Theo'}), {headers: {"accessToken": "My access token"}})
       setMessage(result?.message || "")
     })();
   }, []);
